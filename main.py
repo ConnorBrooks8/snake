@@ -5,8 +5,8 @@ import random
 #Size Variables
 MINCOORD=1
 GRIDSPACE=15
-SnakeWidth = 10
-DotWidth = 3
+SnakeWidth = 30
+DotWidth = 10
 MAXCOORD=GRIDSPACE*(SnakeWidth+1)+2
 #Arrow Key Codes
 RightKey='Right'
@@ -47,6 +47,15 @@ class Snake:
         self.scorebutton = Label(self.frame, textvariable=self.scorestring)
         self.scorebutton.pack(side=LEFT)
 
+        scorefile = open("highscores.txt","r")
+        self.highscore = int(scorefile.readline())
+        scorefile.close()
+        
+        self.highscorestring=StringVar()
+        self.highscorestring.set("Highscore: %d" % self.highscore)
+
+        self.highlabel = Label(self.frame, textvariable=self.highscorestring)
+        self.highlabel.pack(side=LEFT)
 
     def key(self,event):
         if event.keysym == RightKey:
@@ -149,8 +158,12 @@ class Snake:
                     dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+DotWidth,doty+DotWidth))
         
 
-                self.score = self.score + 1        
+                self.score = self.score + 1
                 self.scorestring.set("Score: %d" % self.score)
+
+                if self.score > self.highscore:
+                    self.highscore = self.score
+                    self.highscorestring.set("Highscore: %d" % self.highscore)
 
                 self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
             else:
@@ -181,6 +194,11 @@ class Snake:
 
     def quit(self):
         self.quit = True
+        
+        scorefile = open("highscores.txt","w")
+        scorefile.write(str(self.highscore))
+        scorefile.close()
+
         time.sleep(1)
         self.frame.quit()
 
