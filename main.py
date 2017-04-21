@@ -1,16 +1,17 @@
 from Tkinter import *
 import threading
 import time
+import random
 #Define Some Variables
 MINCOORD=1
-MAXCOORD=100
+MAXCOORD=122
 RightKey='Right'
 LeftKey='Left'
 UpKey='Up'
 DownKey='Down'
 DefaultDirection= 'right'
-DefaultHead=[30,10]
-DefaultEnd=[15,15]
+DefaultHead=[34,12]
+DefaultEnd=[16,16]
 
 class Snake:
 
@@ -51,6 +52,7 @@ class Snake:
         self.head=DefaultHead
         self.end=DefaultEnd
         self.quit=False
+        self.eat=False
 
         self.item=self.canvas.create_rectangle(self.head[0],self.head[1],self.head[0]+10,self.head[1]+10,fill="green",tag=DefaultDirection)
 
@@ -58,51 +60,77 @@ class Snake:
 
         self.canvas.create_rectangle(self.head[0]-20,self.head[1],self.head[0]-10,self.head[1]+10,fill="green",tag="right")
 
+        dotx = random.randint(MINCOORD,MAXCOORD-3)
+        doty = random.randint(MINCOORD,MAXCOORD-3)
+        self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,tag='dot')
+
         threading.Thread(target=self.gameloop).start()
 
 
     def gameloop(self):
         while self.quit==False:
-            self.move()
+            
+            self.grow()
+            self.eatcollide()
+            if self.eat==False:
+                self.delete()
+            else:
+                self.eat=False
             time.sleep(0.5)
 
-    def move(self):
-        endd = self.canvas.find_closest(self.end[0],self.end[1])[0]
-        
-
-        if self.canvas.gettags(endd)[0]=="right":
-            self.end[0]=self.end[0]+10
-        if self.canvas.gettags(endd)[0]=="left":
-            self.end[0]=self.end[0]-10
-        if self.canvas.gettags(endd)[0]=="up":
-            self.end[1]=self.end[1]-10
-        if self.canvas.gettags(endd)[0]=="down":
-            self.end[1]=self.end[1]+10
-
-        self.canvas.delete(endd)
+    def grow(self): 
         
         if self.direction=="right":
-            self.head[0]=self.head[0]+10
+            self.head[0]=self.head[0]+11
             self.canvas.itemconfig(self.item,tag='right')
             self.draw()
         if self.direction=="left":
-            self.head[0]=self.head[0]-10
+            self.head[0]=self.head[0]-11
             self.canvas.itemconfig(self.item,tag='left')
             self.draw()
         if self.direction=="up":
-            self.head[1]=self.head[1]-10
+            self.head[1]=self.head[1]-11
             self.canvas.itemconfig(self.item,tag='up')
             self.draw()
         if self.direction=="down":
-            self.head[1]=self.head[1]+10
+            self.head[1]=self.head[1]+11
             self.canvas.itemconfig(self.item,tag='down')
             self.draw()
+
+
+    def eatcollide(self):
+        overlap =self.canvas.find_overlapping(self.head[0],self.head[1],self.head[0]+10,self.head[1]+10) 
+        for i in overlap:
+            for j in self.canvas.gettags(i):
+                if j == 'dot':
+                    self.eat=True
+                    self.canvas.delete(i)
+                    dotx = random.randint(MINCOORD,MAXCOORD-3)
+                    doty = random.randint(MINCOORD,MAXCOORD-3)
+                    self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,tag='dot')
+        if self.head[0]>MAXCOORD-11 or self.head[0]<MINCOORD or self.head[1]>MAXCOORD-11 or self.head[1]<MINCOORD:
+            self.quit()
+    def delete(self):
+        endd = self.canvas.find_closest(self.end[0],self.end[1])[0]
+
+        if self.canvas.gettags(endd)[0]=="right":
+            self.end[0]=self.end[0]+11
+        if self.canvas.gettags(endd)[0]=="left":
+            self.end[0]=self.end[0]-11
+        if self.canvas.gettags(endd)[0]=="up":
+            self.end[1]=self.end[1]-11
+        if self.canvas.gettags(endd)[0]=="down":
+            self.end[1]=self.end[1]+11
+
+        self.canvas.delete(endd)
+
 
     def draw(self): 
         self.item = self.canvas.create_rectangle(self.head[0],self.head[1],self.head[0]+10,self.head[1]+10,fill="green")
 
     def quit(self):
         self.quit = True
+        time.sleep(1)
         self.frame.quit()
 
 root = Tk()
