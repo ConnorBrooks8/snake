@@ -30,12 +30,23 @@ class Snake:
         self.canvas.create_line(MINCOORD,MAXCOORD,MAXCOORD,MAXCOORD)
         self.canvas.create_line(MAXCOORD,MINCOORD,MAXCOORD,MAXCOORD)
         
-        #Start and Quit Buttons
         self.button = Button(self.frame, text="QUIT",fg="red",command=self.quit)
         self.button.pack(side=LEFT)
 
         self.start = Button(self.frame, text="Start",command=self.startgame)
         self.start.pack(side=LEFT)
+
+        #self.highscore = Button(self.frame, text="HighScores",command=self.highscore)
+        #self.highscore.pack(side=LEFT)
+
+
+        self.score=0
+        self.scorestring= StringVar()
+        self.scorestring.set("Score: %d" % self.score)
+
+        self.scorebutton = Label(self.frame, textvariable=self.scorestring)
+        self.scorebutton.pack(side=LEFT)
+
 
     def key(self,event):
         if event.keysym == RightKey:
@@ -57,6 +68,9 @@ class Snake:
         #reset game
         self.canvas.delete(ALL)
         
+        self.score=0
+        self.scorestring.set("Score: %d" % self.score)
+
         self.canvas.create_line(MINCOORD,MINCOORD,MINCOORD,MAXCOORD)
         self.canvas.create_line(MINCOORD,MINCOORD,MAXCOORD,MINCOORD)
         self.canvas.create_line(MINCOORD,MAXCOORD,MAXCOORD,MAXCOORD)
@@ -80,7 +94,6 @@ class Snake:
             dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+DotWidth,doty+DotWidth))
  
 
-        
         self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
 
 
@@ -134,7 +147,11 @@ class Snake:
                     doty = random.randint(MINCOORD,MAXCOORD-DotWidth)
                     
                     dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+DotWidth,doty+DotWidth))
-                
+        
+
+                self.score = self.score + 1        
+                self.scorestring.set("Score: %d" % self.score)
+
                 self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
             else:
                 self.quit()
@@ -158,6 +175,9 @@ class Snake:
 
     def draw(self): 
         self.item = self.canvas.create_rectangle(self.head[0],self.head[1],self.head[0]+SnakeWidth,self.head[1]+SnakeWidth,fill="green")
+
+    def highscore(self):
+        print("There are no highscores, this game doesn't even keep score yet")
 
     def quit(self):
         self.quit = True
