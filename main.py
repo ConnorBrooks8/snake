@@ -4,13 +4,13 @@ import time
 import random
 #Define Some Variables
 MINCOORD=1
-MAXCOORD=122
+MAXCOORD=123
 RightKey='Right'
 LeftKey='Left'
 UpKey='Up'
 DownKey='Down'
 DefaultDirection= 'right'
-DefaultHead=[34,12]
+DefaultHead=[35,13]
 DefaultEnd=[16,16]
 
 class Snake:
@@ -47,7 +47,18 @@ class Snake:
 
 
     def startgame(self):
+
+        DefaultDirection= 'right'
+        DefaultHead=[35,13]
+        DefaultEnd=[16,16]
         #clear things
+        self.canvas.delete(ALL)
+        
+        self.canvas.create_line(MINCOORD,MINCOORD,MINCOORD,MAXCOORD)
+        self.canvas.create_line(MINCOORD,MINCOORD,MAXCOORD,MINCOORD)
+        self.canvas.create_line(MINCOORD,MAXCOORD,MAXCOORD,MAXCOORD)
+        self.canvas.create_line(MAXCOORD,MINCOORD,MAXCOORD,MAXCOORD)
+
         self.direction= DefaultDirection
         self.head=DefaultHead
         self.end=DefaultEnd
@@ -60,9 +71,16 @@ class Snake:
 
         self.canvas.create_rectangle(self.head[0]-20,self.head[1],self.head[0]-10,self.head[1]+10,fill="green",tag="right")
 
-        dotx = random.randint(MINCOORD,MAXCOORD-3)
-        doty = random.randint(MINCOORD,MAXCOORD-3)
-        self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,tag='dot')
+        dotoverlap=True
+        while dotoverlap==True:
+            dotx = random.randint(MINCOORD,MAXCOORD-3)
+            doty = random.randint(MINCOORD,MAXCOORD-3)
+            dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+3,doty+3))
+ 
+
+        
+        self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,fill='red',tag='dot')
+
 
         threading.Thread(target=self.gameloop).start()
 
@@ -71,43 +89,54 @@ class Snake:
         while self.quit==False:
             
             self.grow()
-            self.eatcollide()
             if self.eat==False:
                 self.delete()
             else:
                 self.eat=False
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def grow(self): 
         
         if self.direction=="right":
             self.head[0]=self.head[0]+11
-            self.canvas.itemconfig(self.item,tag='right')
+            self.canvas.itemconfig(self.item,tag='right')        
+            self.eatcollide()
             self.draw()
         if self.direction=="left":
             self.head[0]=self.head[0]-11
             self.canvas.itemconfig(self.item,tag='left')
+            self.eatcollide()
             self.draw()
         if self.direction=="up":
             self.head[1]=self.head[1]-11
             self.canvas.itemconfig(self.item,tag='up')
+            self.eatcollide()
             self.draw()
         if self.direction=="down":
             self.head[1]=self.head[1]+11
             self.canvas.itemconfig(self.item,tag='down')
+            self.eatcollide()
             self.draw()
 
 
     def eatcollide(self):
         overlap =self.canvas.find_overlapping(self.head[0],self.head[1],self.head[0]+10,self.head[1]+10) 
         for i in overlap:
-            for j in self.canvas.gettags(i):
-                if j == 'dot':
-                    self.eat=True
-                    self.canvas.delete(i)
+            if self.canvas.gettags(i)[0] == 'dot':
+                self.eat=True
+                self.canvas.delete(i)
+                
+                dotoverlap=True
+                while dotoverlap==True:
                     dotx = random.randint(MINCOORD,MAXCOORD-3)
                     doty = random.randint(MINCOORD,MAXCOORD-3)
-                    self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,tag='dot')
+                    
+                    dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+3,doty+3))
+                
+                self.canvas.create_rectangle(dotx,doty,dotx+3,doty+3,fill='red',tag='dot')
+            else:
+                self.quit()
+
         if self.head[0]>MAXCOORD-11 or self.head[0]<MINCOORD or self.head[1]>MAXCOORD-11 or self.head[1]<MINCOORD:
             self.quit()
     def delete(self):
