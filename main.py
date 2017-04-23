@@ -36,8 +36,8 @@ class Snake:
         self.start = Button(self.frame, text="Start",command=self.startgame)
         self.start.pack(side=LEFT)
 
-        #self.highscore = Button(self.frame, text="HighScores",command=self.highscore)
-        #self.highscore.pack(side=LEFT)
+        self.highscore = Button(self.frame, text="HighScores",command=self.highscore)
+        self.highscore.pack(side=LEFT)
 
 
         self.score=0
@@ -190,7 +190,12 @@ class Snake:
         self.item = self.canvas.create_rectangle(self.head[0],self.head[1],self.head[0]+SnakeWidth,self.head[1]+SnakeWidth,fill="green")
 
     def highscore(self):
-        print("There are no highscores, this game doesn't even keep score yet")
+        
+        t = Toplevel(root)
+        t.wm_title("Highscore")
+        l = Label(t, textvariable=self.highscorestring)
+        l.pack(side="top") 
+
 
     def quit(self):
         self.quit = True
