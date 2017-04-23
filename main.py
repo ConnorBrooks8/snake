@@ -48,11 +48,13 @@ class Snake:
         self.scorebutton.pack(side=LEFT)
 
         scorefile = open("highscores.txt","r")
-        self.highscore = int(scorefile.readline())
+        self.highscore=[]
+        for i in range(10):
+            self.highscore.append(int(scorefile.readline()))
         scorefile.close()
         
         self.highscorestring=StringVar()
-        self.highscorestring.set("Highscore: %d" % self.highscore)
+        self.highscorestring.set("Highscore: %d" % self.highscore[0])
 
         self.highlabel = Label(self.frame, textvariable=self.highscorestring)
         self.highlabel.pack(side=LEFT)
@@ -73,6 +75,8 @@ class Snake:
         DefaultDirection= 'right'
         DefaultHead=[(SnakeWidth+1)*3+2,(SnakeWidth+1)+2]
         DefaultEnd=[(SnakeWidth+1)+2,(SnakeWidth+1)+2]
+        
+        self.updatehighscore()
 
         #reset game
         self.canvas.delete(ALL)
@@ -88,7 +92,7 @@ class Snake:
         self.direction= DefaultDirection
         self.head=DefaultHead
         self.end=DefaultEnd
-        self.quit=False
+        self.quitgame=False
         self.eat=False
         
         #Create Initial Snake
@@ -110,7 +114,7 @@ class Snake:
 
 
     def gameloop(self):
-        while self.quit==False:
+        while self.quitgame==False:
             
             self.grow()
             if self.eat==False:
@@ -146,31 +150,33 @@ class Snake:
     def eatcollide(self):
         overlap =self.canvas.find_overlapping(self.head[0],self.head[1],self.head[0]+SnakeWidth,self.head[1]+SnakeWidth) 
         for i in overlap:
-            if self.canvas.gettags(i)[0] == 'dot':
-                self.eat=True
-                self.canvas.delete(i)
+            if bool(self.canvas.gettags(i))==True:
+                if self.canvas.gettags(i)[0] == 'dot':
+                    self.eat=True
+                    self.canvas.delete(i)
                 
-                dotoverlap=True
-                while dotoverlap==True:
-                    dotx = random.randint(MINCOORD,MAXCOORD-DotWidth)
-                    doty = random.randint(MINCOORD,MAXCOORD-DotWidth)
+                    dotoverlap=True
+                    while dotoverlap==True:
+                        dotx = random.randint(MINCOORD,MAXCOORD-DotWidth)
+                        doty = random.randint(MINCOORD,MAXCOORD-DotWidth)
                     
-                    dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+DotWidth,doty+DotWidth))
+                        dotoverlap = bool(self.canvas.find_overlapping(dotx,doty,dotx+DotWidth,doty+DotWidth))
         
 
-                self.score = self.score + 1
-                self.scorestring.set("Score: %d" % self.score)
+                    self.score = self.score + 1
+                    self.scorestring.set("Score: %d" % self.score)
 
-                if self.score > self.highscore:
-                    self.highscore = self.score
-                    self.highscorestring.set("Highscore: %d" % self.highscore)
+                    if self.score > self.highscore:
+                        self.highscore = self.score
+                        self.highscorestring.set("Highscore: %d" % self.highscore[0])
 
-                self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
+                    self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
+                else:
+                    self.endgame()
             else:
-                self.quit()
-
+                self.endgame()
         if self.head[0]>MAXCOORD-(SnakeWidth+1) or self.head[0]<MINCOORD or self.head[1]>MAXCOORD-(SnakeWidth+1) or self.head[1]<MINCOORD:
-            self.quit()
+            self.endgame()
     def delete(self):
         endbox = self.canvas.find_closest(self.end[0],self.end[1])[0]
 
@@ -193,17 +199,27 @@ class Snake:
         
         t = Toplevel(root)
         t.wm_title("Highscore")
-        l = Label(t, textvariable=self.highscorestring)
-        l.pack(side="top") 
+        labels = []
+        for i in range(10):
+            #self.highscorestring.set("Highscore: %d" % self.highscore[i])
+            labels.append(Label(t, text=("Highscore: %d" % self.highscore[i])))
+            labels[i].pack(side="top")
+    def updatehighscore(self):
+        if (self.score > self.highscore[9]):
+            self.highscore.append(self.score)
+            self.highscore = sorted(self.highscore,reverse=True)[0:10]
 
+        scorefile = open("highscores.txt","w")
+        for i in range(10):
+            scorefile.write(str(self.highscore[i]) + "\n")
+        scorefile.close()
+    def endgame(self):
+        self.quitgame = True
+        self.updatehighscore()
 
     def quit(self):
-        self.quit = True
+        self.endgame()
         
-        scorefile = open("highscores.txt","w")
-        scorefile.write(str(self.highscore))
-        scorefile.close()
-
         time.sleep(1)
         self.frame.quit()
 
