@@ -50,11 +50,16 @@ class Snake:
         scorefile = open("highscores.txt","r")
         self.highscore=[]
         for i in range(10):
-            self.highscore.append(int(scorefile.readline()))
+            rawline = scorefile.readline()
+            rawscore = rawline.split(" ")
+            hscore = [0,""]
+            hscore[0] = int(rawscore[0])
+            hscore[1] = rawscore[1].strip()
+            self.highscore.append(hscore)
         scorefile.close()
-        
+
         self.highscorestring=StringVar()
-        self.highscorestring.set("Highscore: %d" % self.highscore[0])
+        self.highscorestring.set("Highscore: %d" % self.highscore[0][0])
 
         self.highlabel = Label(self.frame, textvariable=self.highscorestring)
         self.highlabel.pack(side=LEFT)
@@ -168,7 +173,7 @@ class Snake:
 
                     if self.score > self.highscore:
                         self.highscore = self.score
-                        self.highscorestring.set("Highscore: %d" % self.highscore[0])
+                        self.highscorestring.set("Highscore: %d" % self.highscore[0][0])
 
                     self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
                 else:
@@ -201,17 +206,23 @@ class Snake:
         t.wm_title("Highscore")
         labels = []
         for i in range(10):
-            #self.highscorestring.set("Highscore: %d" % self.highscore[i])
-            labels.append(Label(t, text=("Highscore: %d" % self.highscore[i])))
+            labels.append(Label(t, text=(self.highscore[i][1] + ": " + str(self.highscore[i][0]))))
             labels[i].pack(side="top")
+    
+    def getkey(self, item):
+        return item[0]
+    
     def updatehighscore(self):
-        if (self.score > self.highscore[9]):
-            self.highscore.append(self.score)
-            self.highscore = sorted(self.highscore,reverse=True)[0:10]
+        if (self.score > self.highscore[9][0]):
+            initials = raw_input("Enter your Initials: ")
+            self.highscore.append([self.score, initials])
+            print(self.highscore)
+            self.highscore = sorted(self.highscore,key=self.getkey,reverse=True)[0:10]
+            print(self.highscore)
 
         scorefile = open("highscores.txt","w")
         for i in range(10):
-            scorefile.write(str(self.highscore[i]) + "\n")
+            scorefile.write(str(self.highscore[i][0]) + " " + self.highscore[i][1] + "\n")
         scorefile.close()
     def endgame(self):
         self.quitgame = True
@@ -222,6 +233,7 @@ class Snake:
         
         time.sleep(1)
         self.frame.quit()
+
 
 root = Tk()
 app = Snake(root)
