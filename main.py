@@ -36,8 +36,8 @@ class Snake:
         self.start = Button(self.frame, text="Start",command=self.startgame)
         self.start.pack(side=LEFT)
 
-        self.highscore = Button(self.frame, text="HighScores",command=self.highscore)
-        self.highscore.pack(side=LEFT)
+        self.highscorebutton = Button(self.frame, text="HighScores",command=self.highscore)
+        self.highscorebutton.pack(side=LEFT)
 
 
         self.score=0
@@ -81,13 +81,14 @@ class Snake:
         DefaultHead=[(SnakeWidth+1)*3+2,(SnakeWidth+1)+2]
         DefaultEnd=[(SnakeWidth+1)+2,(SnakeWidth+1)+2]
         
-        self.updatehighscore()
 
         #reset game
         self.canvas.delete(ALL)
         
         self.score=0
         self.scorestring.set("Score: %d" % self.score)
+
+        self.updatehighscore()
 
         self.canvas.create_line(MINCOORD,MINCOORD,MINCOORD,MAXCOORD)
         self.canvas.create_line(MINCOORD,MINCOORD,MAXCOORD,MINCOORD)
@@ -171,9 +172,9 @@ class Snake:
                     self.score = self.score + 1
                     self.scorestring.set("Score: %d" % self.score)
 
-                    if self.score > self.highscore:
-                        self.highscore = self.score
-                        self.highscorestring.set("Highscore: %d" % self.highscore[0][0])
+                    if self.score > self.highscore[0][0]:
+                        self.displayscore = self.score
+                        self.highscorestring.set("Highscore: %d" % self.displayscore)
 
                     self.canvas.create_rectangle(dotx,doty,dotx+DotWidth,doty+DotWidth,fill='red',tag='dot')
                 else:
@@ -216,9 +217,8 @@ class Snake:
         if (self.score > self.highscore[9][0]):
             initials = raw_input("Enter your Initials: ")
             self.highscore.append([self.score, initials])
-            print(self.highscore)
             self.highscore = sorted(self.highscore,key=self.getkey,reverse=True)[0:10]
-            print(self.highscore)
+            self.score = 0
 
         scorefile = open("highscores.txt","w")
         for i in range(10):
